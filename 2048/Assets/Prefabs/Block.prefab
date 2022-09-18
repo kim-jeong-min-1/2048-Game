@@ -269,8 +269,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 437c4a813d918ea46bb158c6c2e2c539, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numText: {fileID: 0}
-  num: 0
+  num: 2
+  blockColor: {r: 0.90588236, g: 0.8745098, b: 0.84313726, a: 1}
 --- !u!61 &-987218050133505010
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -918,6 +918,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1114031801}
   - component: {fileID: 1114031800}
+  - component: {fileID: 1114031802}
   m_Layer: 0
   m_Name: GameSystem
   m_TagString: Untagged
@@ -938,6 +939,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blocks: []
+  blockColors:
+  - {r: 0.90588236, g: 0.8745098, b: 0.84313726, a: 1}
+  - {r: 0.9245283, g: 0.83076715, b: 0.73700607, a: 1}
+  - {r: 0.9716981, g: 0.64857805, b: 0.5087665, a: 1}
+  - {r: 1, g: 0.8, b: 0.8, a: 1}
+  - {r: 1, g: 0.36862746, b: 0.34117648, a: 1}
+  - {r: 0.6930614, g: 0.9245283, b: 0.501513, a: 1}
+  - {r: 1, g: 0.14890143, b: 0, a: 1}
+  - {r: 0.24390352, g: 0.8207547, b: 0.8110868, a: 1}
+  - {r: 1, g: 0.62352943, b: 0.101960786, a: 1}
+  - {r: 1, g: 0.7529412, b: 0.28235295, a: 1}
+  - {r: 1, g: 0.98039216, b: 0.39607844, a: 1}
   blockPrefab: {fileID: 6973197648008476919, guid: 8c36f49f7c6c24448865c977cf02f9e2, type: 3}
 --- !u!4 &1114031801
 Transform:
@@ -953,6 +966,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1114031802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114031799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55be74b23d6b19f47925f194d42fd209, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1249199891
 GameObject:
   m_ObjectHideFlags: 0

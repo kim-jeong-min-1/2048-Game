@@ -2,19 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum TileType
-{
-    empty,
-    fill
-}
-
 public class GameSystem : MonoBehaviour
 {
     private const int TILE_SIZE = 4;
     public static GameSystem Inst { get; set; }
 
-    public List<Block> blocks = new List<Block>();
-    public int[,] Tile = new int[TILE_SIZE, TILE_SIZE];
+    //public List<Block> blocks = new List<Block>();
+    public Block[,] blocks = new Block[TILE_SIZE, TILE_SIZE];
     public Color[] blockColors;
 
     [SerializeField] Block blockPrefab;
@@ -30,17 +24,35 @@ public class GameSystem : MonoBehaviour
         SpawnBlock();
     }
 
-    public void MoveBlcok(Vector3 direction)
+    public void MoveBlcokToDirection(Vector3 direction)
     {
-        for (int i = 0; i < blocks.Count; i++)
+        if (direction == Vector3.right || direction == Vector3.down)
         {
-            MoveCheck(blocks[i], direction);
+            for (int y = 0; y < TILE_SIZE; y++)
+            {
+                for (int x = 3; x >= 0; x--)
+                {
+                    MoveCheck(blocks[x, y], direction);
+                }
+            }
         }
-        SpawnBlock();
+        else if (direction == Vector3.left || direction == Vector3.up)
+        {
+            for (int y = 3; y >= 0; y--)
+            {
+                for (int x = 0; x < TILE_SIZE; x++)
+                {
+                    MoveCheck(blocks[x, y], direction);
+                }
+            }
+        }
+        MoveBlock();
     }
 
     public void MoveCheck(Block block, Vector3 dir)
     {
+        if (block == null) return;
+
         Vector3 checkPos = block.transform.position;
         for (int i = 0; i < TILE_SIZE; i++)
         {
@@ -52,55 +64,65 @@ public class GameSystem : MonoBehaviour
 
             if (hit.collider != null)
             {
-                if (Tile[(int)checkPos.x, (int)checkPos.y] == (int)TileType.fill)
+                Block adjBlock = hit.collider.gameObject.GetComponent<Block>();
+                if (block.num == adjBlock.num)
                 {
-                    if (block.num == hit.collider.gameObject.GetComponent<Block>().num)
+                    if(adjBlock.isMerge == false)
                     {
-                        StartCoroutine(block.BlockMoving(checkPos, 0.5f, MergeToBlock));
-                        return;
+                        block.isMerge = true;
+                        block.movePos = adjBlock.movePos;
                     }
                     else
                     {
-                        StartCoroutine(block.BlockMoving(checkPos - dir, 0.5f));
-                        return;
-                    }
+                        block.movePos = adjBlock.movePos - dir;
+                    }                  
                 }
-            }
-            else
-            {
-                if (Tile[(int)checkPos.x, (int)checkPos.y] == (int)TileType.fill)
+                else
                 {
-                    StartCoroutine(block.BlockMoving(checkPos - dir, 0.5f));
-                    return;
+                    block.movePos = adjBlock.movePos - dir;
                 }
+                return;
             }
         }
-        StartCoroutine(block.BlockMoving(checkPos, 0.5f));
+        block.movePos = checkPos;
+    }
+
+    void MoveBlock()
+    {
+        for (int x = 0; x < TILE_SIZE; x++)
+        {
+            for (int y = 0; y < TILE_SIZE; y++)
+            {
+                if (blocks[x, y] == null) continue;
+
+                if (blocks[x, y].isMerge == true) StartCoroutine(blocks[x, y].BlockMoving(blocks[x, y].movePos, 0.5f, MergeToBlock));
+                else StartCoroutine(blocks[x, y].BlockMoving(blocks[x, y].movePos, 0.5f));
+            }
+        }
+        SpawnBlock();
     }
 
     void SpawnBlock()
     {
         Vector2 SpawnPos = new Vector2(Random.Range(0, TILE_SIZE), Random.Range(0, TILE_SIZE));
 
-        if (Tile[(int)SpawnPos.x, (int)SpawnPos.y] == (int)TileType.fill)
+        if (blocks[(int)SpawnPos.x, (int)SpawnPos.y] != null)
         {
             SpawnBlock();
             return;
         }
 
-        Tile[(int)SpawnPos.x, (int)SpawnPos.y] = (int)TileType.fill;
         Block block = Instantiate(blockPrefab, SpawnPos, Quaternion.identity);
-        blocks.Add(block);
+        blocks[(int)SpawnPos.x, (int)SpawnPos.y] = block;
     }
 
     void SpawnBlock(int number, Color color, Vector2 SpawnPos)
     {
-        Tile[(int)SpawnPos.x, (int)SpawnPos.y] = (int)TileType.fill;
         Block block = Instantiate(blockPrefab, SpawnPos, Quaternion.identity);
 
         block.num = number;
         block.blockColor = color;
-        blocks.Add(block);
+        blocks[(int)SpawnPos.x, (int)SpawnPos.y] = block;
     }
 
     void MergeToBlock(Vector2 pos)
@@ -117,7 +139,6 @@ public class GameSystem : MonoBehaviour
         SpawnBlock(number, blockColors[Division(number)], pos);
         for (int i = 0; i < hit.Length; i++)
         {
-            blocks.Remove(hit[i].collider.GetComponent<Block>());
             Destroy(hit[i].collider.gameObject);
         }
     }

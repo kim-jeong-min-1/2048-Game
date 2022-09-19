@@ -5,6 +5,12 @@ using TMPro;
 
 public class Block : MonoBehaviour
 {
+    [HideInInspector]
+    public bool isMerge;
+
+    [HideInInspector]
+    public Vector3 movePos;
+
     public int num;
     public Color blockColor;
 
@@ -38,14 +44,12 @@ public class Block : MonoBehaviour
 
     public IEnumerator BlockMoving(Vector3 pos, float time, System.Action<Vector2> merge = null)
     {
-        GameSystem.Inst.Tile[(int)transform.position.x, (int)transform.position.y] = (int)TileType.empty;
-        GameSystem.Inst.Tile[(int)pos.x, (int)pos.y] = (int)TileType.fill;
-
         while (transform.position != pos)
         {
             transform.position = Vector2.MoveTowards(transform.position, pos, time);
             yield return new WaitForFixedUpdate();
         }
+        GameSystem.Inst.blocks[(int)movePos.x, (int)movePos.y] = this;
         merge?.Invoke(pos);
     }
 

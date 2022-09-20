@@ -44,12 +44,14 @@ public class Block : MonoBehaviour
 
     public IEnumerator BlockMoving(Vector3 pos, float time, System.Action<Vector2> merge = null)
     {
+        GameSystem.Inst.blocks[(int)transform.position.x, (int)transform.position.y] = null;
+        GameSystem.Inst.blocks[(int)movePos.x, (int)movePos.y] = this;
+
         while (transform.position != pos)
         {
             transform.position = Vector2.MoveTowards(transform.position, pos, time);
             yield return new WaitForFixedUpdate();
         }
-        GameSystem.Inst.blocks[(int)movePos.x, (int)movePos.y] = this;
         merge?.Invoke(pos);
     }
 

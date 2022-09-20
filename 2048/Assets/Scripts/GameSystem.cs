@@ -20,8 +20,9 @@ public class GameSystem : MonoBehaviour
 
     private void Start()
     {
-        SpawnBlock();
-        SpawnBlock();
+        GameManager.Inst.TurnOver += SpawnBlock;
+        GameManager.Inst.TurnOver.Invoke();
+        GameManager.Inst.TurnOver.Invoke();
     }
 
     public void MoveBlcokToDirection(Vector3 direction)
@@ -46,7 +47,7 @@ public class GameSystem : MonoBehaviour
                 }
             }
         }
-        MoveBlock();
+        MoveBlock(direction);
     }
 
     public void MoveCheck(Block block, Vector3 dir)
@@ -87,22 +88,39 @@ public class GameSystem : MonoBehaviour
         block.movePos = checkPos;
     }
 
-    void MoveBlock()
+    void MoveBlock(Vector3 direction)
     {
-        for (int x = 0; x < TILE_SIZE; x++)
+        if (direction == Vector3.right || direction == Vector3.down)
         {
             for (int y = 0; y < TILE_SIZE; y++)
             {
-                if (blocks[x, y] == null) continue;
+                for (int x = 3; x >= 0; x--)
+                {
+                    if (blocks[x, y] == null) continue;
 
-                if (blocks[x, y].isMerge == true) StartCoroutine(blocks[x, y].BlockMoving(blocks[x, y].movePos, 0.5f, MergeToBlock));
-                else StartCoroutine(blocks[x, y].BlockMoving(blocks[x, y].movePos, 0.5f));
+                    if (blocks[x, y].isMerge == true) StartCoroutine(blocks[x, y].BlockMoving(blocks[x, y].movePos, 0.5f, MergeToBlock));
+                    else StartCoroutine(blocks[x, y].BlockMoving(blocks[x, y].movePos, 0.5f));
+                }
             }
         }
-        SpawnBlock();
+        else if (direction == Vector3.left || direction == Vector3.up)
+        {
+            for (int y = 3; y >= 0; y--)
+            {
+                for (int x = 0; x < TILE_SIZE; x++)
+                {
+                    if (blocks[x, y] == null) continue;
+
+                    if (blocks[x, y].isMerge == true) StartCoroutine(blocks[x, y].BlockMoving(blocks[x, y].movePos, 0.5f, MergeToBlock));
+                    else StartCoroutine(blocks[x, y].BlockMoving(blocks[x, y].movePos, 0.5f));
+                }
+            }
+        }
+        GameManager.Inst.curGameState = GameState.Wait;
+        GameManager.Inst.Processing();
     }
 
-    void SpawnBlock()
+    public void SpawnBlock()
     {
         Vector2 SpawnPos = new Vector2(Random.Range(0, TILE_SIZE), Random.Range(0, TILE_SIZE));
 
@@ -114,6 +132,7 @@ public class GameSystem : MonoBehaviour
 
         Block block = Instantiate(blockPrefab, SpawnPos, Quaternion.identity);
         blocks[(int)SpawnPos.x, (int)SpawnPos.y] = block;
+        
     }
 
     void SpawnBlock(int number, Color color, Vector2 SpawnPos)
@@ -136,11 +155,12 @@ public class GameSystem : MonoBehaviour
         }
 
         int number = hit[0].collider.gameObject.GetComponent<Block>().num * 2;
-        SpawnBlock(number, blockColors[Division(number)], pos);
         for (int i = 0; i < hit.Length; i++)
         {
+            blocks[(int)hit[i].collider.gameObject.transform.position.x, (int)hit[i].collider.gameObject.transform.position.y] = null;
             Destroy(hit[i].collider.gameObject);
         }
+        SpawnBlock(number, blockColors[Division(number)], pos);
     }
 
     int Division(int num)

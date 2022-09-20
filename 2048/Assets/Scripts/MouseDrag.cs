@@ -12,7 +12,7 @@ public class MouseDrag : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            dragPoint[0] = Camera.main.ScreenToWorldPoint(Input.mousePosition);          
+            dragPoint[0] = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -25,24 +25,27 @@ public class MouseDrag : MonoBehaviour
             if (Mathf.Abs(dragX) < dragDistance && Mathf.Abs(dragY) < dragDistance) return;
             if (Mathf.Abs(dragX) == Mathf.Abs(dragY)) return;
 
-            gameSystem.MoveBlcokToDirection(dragDirection(dragX, dragY));
+            if (GameManager.Inst.curGameState == GameState.Input)
+            {
+                gameSystem.MoveBlcokToDirection(dragDirection(dragX, dragY));
+            }
         }
     }
 
     Vector2 dragDirection(float x, float y)
     {
-        if(Mathf.Abs(x) > Mathf.Abs(y))
+        if (Mathf.Abs(x) > Mathf.Abs(y))
         {
-            if(x > 0)
+            if (x > 0)
             {
                 return Vector2.right;
             }
-            else if(x < 0)
+            else if (x < 0)
             {
                 return Vector2.left;
             }
         }
-        else if(Mathf.Abs(y) > Mathf.Abs(x))
+        else if (Mathf.Abs(y) > Mathf.Abs(x))
         {
             if (y > 0)
             {

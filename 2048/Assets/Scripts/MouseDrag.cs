@@ -25,8 +25,9 @@ public class MouseDrag : MonoBehaviour
             if (Mathf.Abs(dragX) < dragDistance && Mathf.Abs(dragY) < dragDistance) return;
             if (Mathf.Abs(dragX) == Mathf.Abs(dragY)) return;
 
-            if (GameManager.Inst.curGameState == GameState.Input)
+            if (GameManager.Inst.curGameState == GameState.Wait)
             {
+                GameManager.Inst.curGameState = GameState.Input;
                 gameSystem.MoveBlcokToDirection(dragDirection(dragX, dragY));
             }
         }

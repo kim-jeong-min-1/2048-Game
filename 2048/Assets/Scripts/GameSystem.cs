@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameSystem : MonoBehaviour
 {
     private const int TILE_SIZE = 4;
+    private const int FINALLY_BLOCK_NUM = 2048;
     public static GameSystem Inst { get; set; }
 
     //public List<Block> blocks = new List<Block>();
@@ -20,9 +21,8 @@ public class GameSystem : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Inst.TurnOver += SpawnBlock;
-        GameManager.Inst.TurnOver.Invoke();
-        GameManager.Inst.TurnOver.Invoke();
+        SpawnBlock();
+        SpawnBlock();
     }
 
     public void MoveBlcokToDirection(Vector3 direction)
@@ -47,6 +47,8 @@ public class GameSystem : MonoBehaviour
                 }
             }
         }
+
+
         MoveBlock(direction);
     }
 
@@ -116,8 +118,49 @@ public class GameSystem : MonoBehaviour
                 }
             }
         }
-        GameManager.Inst.curGameState = GameState.Wait;
+
+        GameStateCheck();
         GameManager.Inst.Processing();
+    }
+
+    void GameStateCheck()
+    {
+        if (FailCheck())
+        {
+            GameManager.Inst.curGameState = GameState.GameOver;
+        }
+        else if (ClearCheck())
+        {
+            GameManager.Inst.curGameState = GameState.Clear;
+        }
+    }
+
+    bool FailCheck()
+    {
+        Vector3[] direction = { Vector3.up, Vector3.down, Vector3.right, Vector3.left };
+
+        for (int i = 0; i < 4; i++)
+        {
+            //MoveCheck(blocks[x, y], direction[i]);
+        }
+        return false;
+    }
+
+    bool ClearCheck()
+    {
+        for (int x = 0; x < TILE_SIZE; x++)
+        {
+            for (int y = 0; y < TILE_SIZE; y++)
+            {
+                if (blocks[x, y] == null) continue;
+
+                if (blocks[x, y].num == FINALLY_BLOCK_NUM)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void SpawnBlock()
@@ -132,6 +175,7 @@ public class GameSystem : MonoBehaviour
 
         Block block = Instantiate(blockPrefab, SpawnPos, Quaternion.identity);
         blocks[(int)SpawnPos.x, (int)SpawnPos.y] = block;
+        GameManager.Inst.curGameState = GameState.Wait;
         
     }
 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using System;
 
 public enum GameState
@@ -18,23 +19,48 @@ public class GameManager : MonoBehaviour
 
     public GameState curGameState = GameState.Wait;
 
+    [SerializeField]
+    private GameObject ResultPopUP;
+
+    [SerializeField]
+    private GameObject Clear;
+
+    [SerializeField]
+    private GameObject Fail;
     private void Awake()
     {
         Inst = this;
-
-        TurnOver += () => { curGameState = GameState.Input; };
     }
 
     public void Processing()
     {
-        Action action = curGameState switch
+        TurnOver = curGameState switch
         {
-            GameState.Input => null,
-            GameState.Wait => TurnOver,
-            GameState.Clear => null,
-            GameState.GameOver => null,
+            GameState.Input => GameSystem.Inst.SpawnBlock,
+            GameState.Wait => null,
+            GameState.Clear => Result,
+            GameState.GameOver => Result,
         };
 
-        action?.Invoke();
+        TurnOver?.Invoke();
+    }
+
+    public void Restart()
+    {
+        SceneManager.LoadScene("Ingame");
+    }
+
+    void Result()
+    {
+        ResultPopUP.SetActive(true);
+
+        if (curGameState == GameState.Clear)
+        {
+            Clear.SetActive(true);
+        }
+        else
+        {
+            Fail.SetActive(true);
+        }
     }
 }

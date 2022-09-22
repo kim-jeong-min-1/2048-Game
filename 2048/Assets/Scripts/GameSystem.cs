@@ -11,6 +11,7 @@ public class GameSystem : MonoBehaviour
     //public List<Block> blocks = new List<Block>();
     public Block[,] blocks = new Block[TILE_SIZE, TILE_SIZE];
     public Color[] blockColors;
+    Vector3[] dir = { Vector3.up, Vector3.down, Vector3.right, Vector3.left };
 
     [SerializeField] Block blockPrefab;
 
@@ -27,7 +28,7 @@ public class GameSystem : MonoBehaviour
 
     public void MoveBlcokToDirection(Vector3 direction)
     {
-        if (direction == Vector3.right || direction == Vector3.down)
+        if (direction == dir[2] || direction == dir[1])
         {
             for (int y = 0; y < TILE_SIZE; y++)
             {
@@ -37,7 +38,7 @@ public class GameSystem : MonoBehaviour
                 }
             }
         }
-        else if (direction == Vector3.left || direction == Vector3.up)
+        else if (direction == dir[3] || direction == dir[0])
         {
             for (int y = 3; y >= 0; y--)
             {
@@ -48,8 +49,15 @@ public class GameSystem : MonoBehaviour
             }
         }
 
-
-        MoveBlock(direction);
+        if (NotMoveCheck(direction))
+        {
+            GameManager.Inst.curGameState = GameState.Wait;
+        }
+        else
+        {
+            MoveBlock(direction);
+        }
+        Invoke("AfterProcess", 0.1f);
     }
 
     public void MoveCheck(Block block, Vector3 dir)
@@ -70,7 +78,7 @@ public class GameSystem : MonoBehaviour
                 Block adjBlock = hit.collider.gameObject.GetComponent<Block>();
                 if (block.num == adjBlock.num)
                 {
-                    if(adjBlock.isMerge == false)
+                    if (adjBlock.isMerge == false)
                     {
                         block.isMerge = true;
                         block.movePos = adjBlock.movePos;
@@ -78,12 +86,10 @@ public class GameSystem : MonoBehaviour
                     else
                     {
                         block.movePos = adjBlock.movePos - dir;
-                    }                  
+                    }
+                    return;
                 }
-                else
-                {
-                    block.movePos = adjBlock.movePos - dir;
-                }
+                block.movePos = adjBlock.movePos - dir;
                 return;
             }
         }
@@ -92,7 +98,7 @@ public class GameSystem : MonoBehaviour
 
     void MoveBlock(Vector3 direction)
     {
-        if (direction == Vector3.right || direction == Vector3.down)
+        if (direction == dir[2] || direction == dir[1])
         {
             for (int y = 0; y < TILE_SIZE; y++)
             {
@@ -105,7 +111,7 @@ public class GameSystem : MonoBehaviour
                 }
             }
         }
-        else if (direction == Vector3.left || direction == Vector3.up)
+        else if (direction == dir[3] || direction == dir[0])
         {
             for (int y = 3; y >= 0; y--)
             {
@@ -118,32 +124,54 @@ public class GameSystem : MonoBehaviour
                 }
             }
         }
+    }
 
-        GameStateCheck();
+    void AfterProcess()
+    {
+        if (ClearCheck()) GameManager.Inst.curGameState = GameState.Clear;
+        if (FailCheck() == 0) GameManager.Inst.curGameState = GameState.GameOver;
         GameManager.Inst.Processing();
     }
 
-    void GameStateCheck()
+    bool NotMoveCheck(Vector3 dir)
     {
-        if (FailCheck())
+        for (int x = 0; x < TILE_SIZE; x++)
         {
-            GameManager.Inst.curGameState = GameState.GameOver;
+            for (int y = 0; y < TILE_SIZE; y++)
+            {
+                if (blocks[x, y] == null) continue;
+
+                var checkPos = blocks[x, y].transform.position + dir;
+                Ray2D ray = new Ray2D(checkPos, Vector2.zero);
+                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+
+                if(hit.collider != null)
+                {
+                    if(blocks[x, y].num == hit.collider.GetComponent<Block>().num)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!OutCheck(checkPos)) return false;
+                }
+            }
         }
-        else if (ClearCheck())
-        {
-            GameManager.Inst.curGameState = GameState.Clear;
-        }
+        return true;
     }
 
-    bool FailCheck()
+    int FailCheck()
     {
-        Vector3[] direction = { Vector3.up, Vector3.down, Vector3.right, Vector3.left };
-
-        for (int i = 0; i < 4; i++)
+        int check = 0;
+        for (int i = 0; i < dir.Length; i++)
         {
-            //MoveCheck(blocks[x, y], direction[i]);
+            if (!NotMoveCheck(dir[i]))
+            {
+                check++;
+            }
         }
-        return false;
+        return check;
     }
 
     bool ClearCheck()
@@ -175,8 +203,6 @@ public class GameSystem : MonoBehaviour
 
         Block block = Instantiate(blockPrefab, SpawnPos, Quaternion.identity);
         blocks[(int)SpawnPos.x, (int)SpawnPos.y] = block;
-        GameManager.Inst.curGameState = GameState.Wait;
-        
     }
 
     void SpawnBlock(int number, Color color, Vector2 SpawnPos)

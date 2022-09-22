@@ -36,10 +36,16 @@ public class GameManager : MonoBehaviour
     {
         TurnOver = curGameState switch
         {
-            GameState.Input => GameSystem.Inst.SpawnBlock,
+            GameState.Input => () =>
+            {
+                GameSystem.Inst.SpawnBlock();
+                curGameState = GameState.Wait;
+            }
+            ,
             GameState.Wait => null,
             GameState.Clear => Result,
             GameState.GameOver => Result,
+            _ => throw new NotImplementedException(),
         };
 
         TurnOver?.Invoke();

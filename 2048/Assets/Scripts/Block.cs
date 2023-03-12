@@ -5,11 +5,10 @@ using TMPro;
 
 public class Block : MonoBehaviour
 {
-    [HideInInspector]
-    public bool isMerge;
+    [HideInInspector] public bool isMerge;
+    [HideInInspector] public Block mergeBlock = null;
 
-    [HideInInspector]
-    public Vector3 movePos;
+    [HideInInspector] public Vector3 movePos;
 
     public int num;
     public Color blockColor;

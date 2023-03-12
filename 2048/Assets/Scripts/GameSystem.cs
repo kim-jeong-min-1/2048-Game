@@ -70,26 +70,24 @@ public class GameSystem : MonoBehaviour
             if (OutCheck(checkPos + dir)) break;
             checkPos += dir;
 
-            Ray2D ray = new Ray2D(checkPos, Vector2.zero);
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-
-            if (hit.collider != null)
+            var checkBlock = blocks[(int)checkPos.x, (int)checkPos.y];
+            if (checkBlock != null)
             {
-                Block adjBlock = hit.collider.gameObject.GetComponent<Block>();
-                if (block.num == adjBlock.num)
+                if (block.num == checkBlock.num)
                 {
-                    if (adjBlock.isMerge == false)
+                    if (checkBlock.isMerge == false)
                     {
                         block.isMerge = true;
-                        block.movePos = adjBlock.movePos;
+                        block.movePos = checkBlock.movePos;
+                        block.mergeBlock = checkBlock;
                     }
                     else
                     {
-                        block.movePos = adjBlock.movePos - dir;
+                        block.movePos = checkBlock.movePos - dir;
                     }
                     return;
                 }
-                block.movePos = adjBlock.movePos - dir;
+                block.movePos = checkBlock.movePos - dir;
                 return;
             }
         }
@@ -145,9 +143,9 @@ public class GameSystem : MonoBehaviour
                 Ray2D ray = new Ray2D(checkPos, Vector2.zero);
                 RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
 
-                if(hit.collider != null)
+                if (hit.collider != null)
                 {
-                    if(blocks[x, y].num == hit.collider.GetComponent<Block>().num)
+                    if (blocks[x, y].num == hit.collider.GetComponent<Block>().num)
                     {
                         return false;
                     }
@@ -216,20 +214,18 @@ public class GameSystem : MonoBehaviour
 
     void MergeToBlock(Vector2 pos)
     {
-        Ray2D ray = new Ray2D(pos, Vector2.zero);
-        RaycastHit2D[] hit = Physics2D.RaycastAll(ray.origin, ray.direction);
+        var block = blocks[(int)pos.x, (int)pos.y];
+        if (block.mergeBlock == null)  return;
 
-        if (hit.Length <= 1)
-        {
-            return;
-        }
+        var mergeBlock = block.mergeBlock;
+        blocks[(int)block.transform.position.x, (int)block.transform.position.y] = null;
+        blocks[(int)mergeBlock.transform.position.x, (int)mergeBlock.transform.position.y] = null;
 
-        int number = hit[0].collider.gameObject.GetComponent<Block>().num * 2;
-        for (int i = 0; i < hit.Length; i++)
-        {
-            blocks[(int)hit[i].collider.gameObject.transform.position.x, (int)hit[i].collider.gameObject.transform.position.y] = null;
-            Destroy(hit[i].collider.gameObject);
-        }
+        var number = block.num * 2;
+
+        Destroy(mergeBlock.gameObject);
+        Destroy(block.gameObject);
+
         SpawnBlock(number, blockColors[Division(number)], pos);
     }
 

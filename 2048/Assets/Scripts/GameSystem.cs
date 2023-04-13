@@ -67,7 +67,7 @@ public class GameSystem : MonoBehaviour
         Vector3 checkPos = block.transform.position;
         for (int i = 0; i < TILE_SIZE; i++)
         {
-            if (OutCheck(checkPos + dir)) break;
+            if (OutCheck(checkPos, dir)) break;
             checkPos += dir;
 
             var checkBlock = blocks[(int)checkPos.x, (int)checkPos.y];
@@ -138,21 +138,21 @@ public class GameSystem : MonoBehaviour
             for (int y = 0; y < TILE_SIZE; y++)
             {
                 if (blocks[x, y] == null) continue;
+                if (OutCheck(blocks[x, y].transform.position, dir)) continue;
 
                 var checkPos = blocks[x, y].transform.position + dir;
-                Ray2D ray = new Ray2D(checkPos, Vector2.zero);
-                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+                var block = blocks[(int)checkPos.x, (int)checkPos.y];
 
-                if (hit.collider != null)
+                if (block != null)
                 {
-                    if (blocks[x, y].num == hit.collider.GetComponent<Block>().num)
+                    if (blocks[x, y].num == block.GetComponent<Block>().num)
                     {
                         return false;
                     }
                 }
                 else
                 {
-                    if (!OutCheck(checkPos)) return false;
+                    return false;
                 }
             }
         }
@@ -215,7 +215,7 @@ public class GameSystem : MonoBehaviour
     void MergeToBlock(Vector2 pos)
     {
         var block = blocks[(int)pos.x, (int)pos.y];
-        if (block.mergeBlock == null)  return;
+        if (block.mergeBlock == null) return;
 
         var mergeBlock = block.mergeBlock;
         blocks[(int)block.transform.position.x, (int)block.transform.position.y] = null;
@@ -241,8 +241,9 @@ public class GameSystem : MonoBehaviour
         return count;
     }
 
-    bool OutCheck(Vector2 pos)
+    bool OutCheck(Vector2 pos, Vector2 dir)
     {
+        pos += dir;
         if (pos.x < 0 || pos.x > TILE_SIZE - 1 ||
             pos.y < 0 || pos.y > TILE_SIZE - 1)
         {
